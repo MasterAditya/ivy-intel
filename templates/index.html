@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Home - IvyConnect{% endblock %}
+
+{% block hero %}
+<div class="bg-gradient-to-br from-slate-800 via-blue-900 to-indigo-900 text-white py-16 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-10 left-10 w-72 h-72 bg-blue-400 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-purple-400 rounded-full filter blur-3xl"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">🎓 IvyConnect</h1>
+            <p class="text-xl text-blue-200 mb-8 max-w-2xl mx-auto">Real-Time Ivy League Opportunity Intelligence & Student Competency Network</p>
+            
+            <!-- Search Bar -->
+            <form method="get" action="/" class="max-w-2xl mx-auto">
+                <div class="flex flex-wrap gap-2 bg-white rounded-xl p-2 shadow-2xl">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search opportunities..." 
+                        class="flex-1 min-w-48 px-4 py-3 rounded-lg text-gray-800 focus:outline-none">
+                    <select name="domain" class="px-4 py-3 rounded-lg text-gray-800 border-l">
+                        <option value="">All Domains</option>
+                        {% for d in all_domains %}
+                        <option value="{{ d }}" {% if current_domain == d %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
+                        Search
+                    </button>
+                </div>
+                {% if selected_student %}
+                <input type="hidden" name="student_id" value="{{ selected_student.id }}">
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Feature Highlights -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 -mt-8 mb-8 relative z-20">
+    <div class="bg-white rounded-xl shadow-lg p-4 text-center hover:shadow-xl transition border-t-4 border-blue-500">
+        <span class="text-2xl">🎯</span>
+        <h3 class="font-semibold mt-2 text-sm">Real-Time Monitoring</h3>
+        <p class="text-xs text-gray-500">Live Ivy League updates</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-4 text-center hover:shadow-xl transition border-t-4 border-purple-500">
+        <span class="text-2xl">🤖</span>
+        <h3 class="font-semibold mt-2 text-sm">AI Classification</h3>
+        <p class="text-xs text-gray-500">Smart domain matching</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-4 text-center hover:shadow-xl transition border-t-4 border-green-500">
+        <span class="text-2xl">📝</span>
+        <h3 class="font-semibold mt-2 text-sm">Auto-Apply</h3>
+        <p class="text-xs text-gray-500">One-click applications</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-4 text-center hover:shadow-xl transition border-t-4 border-orange-500">
+        <span class="text-2xl">🏆</span>
+        <h3 class="font-semibold mt-2 text-sm">InCoScore</h3>
+        <p class="text-xs text-gray-500">Intelligent ranking</p>
+    </div>
+</div>
+
+<!-- Student Filter -->
+<div class="bg-white rounded-xl shadow-lg p-4 mb-8">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-4">
+            <label class="font-medium text-gray-700">Personalize for:</label>
+            <form method="get" action="/" id="studentForm">
+                <select name="student_id" onchange="this.form.submit()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Students</option>
+                    {% for item in students %}
+                    <option value="{{ item.student.id }}" {% if selected_student and selected_student.id == item.student.id %}selected{% endif %}>
+                        {{ item.student.name }} ({{ item.student.domain_interest }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% if selected_student %}
+            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                Showing {{ selected_student.domain_interest }} opportunities
+            </span>
+            {% endif %}
+        </div>
+        <div class="text-sm text-gray-500">
+            Found <strong>{{ opportunities|length }}</strong> opportunities
+        </div>
+    </div>
+</div>
+
+{% if recommendations and recommendations|length > 0 %}
+<!-- Recommendations -->
+<div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+        <span class="mr-2">✨</span> Recommended for {{ selected_student.name }}
+    </h2>
+    <div class="grid md:grid-cols-3 gap-4">
+        {% for opp in recommendations %}
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200 hover:shadow-lg transition">
+            <div class="flex items-start justify-between mb-3">
+                <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-semibold">{{ opp.university }}</span>
+                <span class="text-xs text-gray-500">{{ opp.posted_date }}</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">{{ opp.title }}</h3>
+            <p class="text-sm text-gray-600 mb-3">{{ opp.description[:100] }}...</p>
+            <a href="/opportunity/{{ opp.id }}" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition no-underline">
+                Apply Now →
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Opportunities Grid -->
+<div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+        <span class="mr-2">🎯</span> Ivy League Opportunities
+    </h2>
+    {% if opportunities %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for opp in opportunities %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition group">
+            <div class="h-2 
+                {% if opp.domain == 'AI' %}bg-gradient-to-r from-purple-500 to-pink-500
+                {% elif opp.domain == 'Law' %}bg-gradient-to-r from-blue-500 to-cyan-500
+                {% elif opp.domain == 'Biomedical' %}bg-gradient-to-r from-green-500 to-emerald-500
+                {% elif opp.domain == 'Engineering' %}bg-gradient-to-r from-orange-500 to-amber-500
+                {% else %}bg-gradient-to-r from-gray-500 to-slate-500{% endif %}">
+            </div>
+            <div class="p-5">
+                <div class="flex items-start justify-between mb-3">
+                    <span class="px-3 py-1 bg-slate-800 text-white rounded-full text-xs font-semibold">{{ opp.university }}</span>
+                    <span class="px-2 py-1 rounded text-xs font-medium
+                        {% if opp.domain == 'AI' %}bg-purple-100 text-purple-700
+                        {% elif opp.domain == 'Law' %}bg-blue-100 text-blue-700
+                        {% elif opp.domain == 'Biomedical' %}bg-green-100 text-green-700
+                        {% elif opp.domain == 'Engineering' %}bg-orange-100 text-orange-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ opp.domain }}
+                    </span>
+                </div>
+                <h3 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-blue-600 transition">{{ opp.title }}</h3>
+                <p class="text-sm text-gray-600 mb-4">{{ opp.description[:120] }}...</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">📅 {{ opp.posted_date }}</span>
+                    <a href="/opportunity/{{ opp.id }}" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition no-underline">
+                        View & Apply
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+        <span class="text-6xl mb-4 block">🔍</span>
+        <p class="text-gray-500 text-lg">No opportunities found matching your criteria.</p>
+        <a href="/" class="mt-4 inline-block text-blue-600 hover:text-blue-800">Clear filters →</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Students Section -->
+<div>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+        <span class="mr-2">👥</span> Student Network
+    </h2>
+    <div class="grid md:grid-cols-3 gap-6">
+        {% for item in students %}
+        <a href="/student/{{ item.student.id }}" class="bg-white rounded-xl shadow-lg p-5 hover:shadow-xl transition group no-underline">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mr-3">
+                    {{ item.student.name[0] }}
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-800 group-hover:text-blue-600 transition">{{ item.student.name }}</h3>
+                    <span class="text-sm px-2 py-0.5 rounded
+                        {% if item.student.domain_interest == 'AI' %}bg-purple-100 text-purple-700
+                        {% elif item.student.domain_interest == 'Law' %}bg-blue-100 text-blue-700
+                        {% elif item.student.domain_interest == 'Biomedical' %}bg-green-100 text-green-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ item.student.domain_interest }}
+                    </span>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-center mb-4">
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <p class="text-lg font-bold text-blue-600">{{ item.student.hackathons }}</p>
+                    <p class="text-xs text-gray-500">Hacks</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <p class="text-lg font-bold text-green-600">{{ item.student.internships }}</p>
+                    <p class="text-xs text-gray-500">Intern</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <p class="text-lg font-bold text-purple-600">{{ item.student.research_papers }}</p>
+                    <p class="text-xs text-gray-500">Papers</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <p class="text-lg font-bold text-orange-600">{{ item.student.coding_score|int }}</p>
+                    <p class="text-xs text-gray-500">Code</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t">
+                <span class="text-sm text-gray-500">InCoScore</span>
+                <span class="text-2xl font-bold text-slate-800">{{ item.incoscore }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

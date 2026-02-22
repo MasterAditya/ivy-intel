@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IvyConnect{% endblock %}
+
+{% block hero %}
+<div class="bg-gradient-to-r from-navy-800 via-blue-900 to-navy-900 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-2">📊 Dashboard</h1>
+        <p class="text-blue-200">Real-time analytics and insights</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Opportunities</p>
+                <p class="text-3xl font-bold text-gray-800">{{ total_opportunities }}</p>
+            </div>
+            <span class="text-4xl">🎯</span>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Students</p>
+                <p class="text-3xl font-bold text-gray-800">{{ total_students }}</p>
+            </div>
+            <span class="text-4xl">👥</span>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Applications</p>
+                <p class="text-3xl font-bold text-gray-800">{{ total_applications }}</p>
+            </div>
+            <span class="text-4xl">📝</span>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500 hover:shadow-xl transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Community Posts</p>
+                <p class="text-3xl font-bold text-gray-800">{{ total_posts }}</p>
+            </div>
+            <span class="text-4xl">💬</span>
+        </div>
+    </div>
+</div>
+
+<div class="grid md:grid-cols-2 gap-8">
+    <!-- Domain Distribution -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">📈 Opportunities by Domain</h2>
+        <div class="space-y-3">
+            {% for stat in domain_stats %}
+            <div class="flex items-center">
+                <span class="w-28 text-sm font-medium 
+                    {% if stat.domain == 'AI' %}text-purple-600
+                    {% elif stat.domain == 'Law' %}text-blue-600
+                    {% elif stat.domain == 'Biomedical' %}text-green-600
+                    {% elif stat.domain == 'Engineering' %}text-orange-600
+                    {% else %}text-gray-600{% endif %}">
+                    {{ stat.domain }}
+                </span>
+                <div class="flex-1 mx-3">
+                    <div class="h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full
+                            {% if stat.domain == 'AI' %}bg-purple-500
+                            {% elif stat.domain == 'Law' %}bg-blue-500
+                            {% elif stat.domain == 'Biomedical' %}bg-green-500
+                            {% elif stat.domain == 'Engineering' %}bg-orange-500
+                            {% else %}bg-gray-500{% endif %}"
+                            style="width: {{ (stat.count / total_opportunities * 100) if total_opportunities > 0 else 0 }}%">
+                        </div>
+                    </div>
+                </div>
+                <span class="text-sm font-bold text-gray-700">{{ stat.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Students -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">🏆 Top Students by InCoScore</h2>
+        <div class="space-y-4">
+            {% for item in top_students %}
+            <div class="flex items-center p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border">
+                <div class="w-10 h-10 flex items-center justify-center rounded-full 
+                    {% if loop.index == 1 %}bg-yellow-400 text-white
+                    {% elif loop.index == 2 %}bg-gray-400 text-white
+                    {% else %}bg-orange-400 text-white{% endif %} font-bold mr-4">
+                    {{ loop.index }}
+                </div>
+                <div class="flex-1">
+                    <a href="/student/{{ item.student.id }}" class="font-semibold text-gray-800 hover:text-blue-600">{{ item.student.name }}</a>
+                    <p class="text-sm text-gray-500">{{ item.student.domain_interest }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold text-navy-800">{{ item.incoscore }}</p>
+                    <p class="text-xs text-gray-500">InCoScore</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="/leaderboard" class="mt-4 inline-block text-blue-600 hover:text-blue-800 text-sm font-medium">View Full Leaderboard →</a>
+    </div>
+</div>
+
+<!-- Recent Applications -->
+<div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">📋 Recent Applications</h2>
+    {% if recent_apps %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="text-left text-sm text-gray-500 border-b">
+                    <th class="pb-3">Student</th>
+                    <th class="pb-3">Opportunity</th>
+                    <th class="pb-3">University</th>
+                    <th class="pb-3">Status</th>
+                    <th class="pb-3">Applied</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for app in recent_apps %}
+                <tr class="hover:bg-gray-50">
+                    <td class="py-3">
+                        <a href="/student/{{ app.student.id }}" class="font-medium text-gray-800 hover:text-blue-600">{{ app.student.name }}</a>
+                    </td>
+                    <td class="py-3 text-gray-600">{{ app.opportunity.title }}</td>
+                    <td class="py-3">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">{{ app.opportunity.university }}</span>
+                    </td>
+                    <td class="py-3">
+                        <span class="px-2 py-1 rounded text-sm
+                            {% if app.status == 'submitted' %}bg-yellow-100 text-yellow-800
+                            {% elif app.status == 'accepted' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ app.status|capitalize }}
+                        </span>
+                    </td>
+                    <td class="py-3 text-sm text-gray-500">{{ app.applied_at.strftime('%b %d, %Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center py-8">No applications yet. Be the first to apply!</p>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="mt-8 grid md:grid-cols-3 gap-4">
+    <a href="/" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 hover:from-blue-600 hover:to-blue-700 transition shadow-lg">
+        <h3 class="font-bold text-lg mb-2">🔍 Browse Opportunities</h3>
+        <p class="text-blue-100 text-sm">Find your next Ivy League opportunity</p>
+    </a>
+    <a href="/community" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-6 hover:from-purple-600 hover:to-purple-700 transition shadow-lg">
+        <h3 class="font-bold text-lg mb-2">💬 Join Community</h3>
+        <p class="text-purple-100 text-sm">Connect with fellow students</p>
+    </a>
+    <a href="/leaderboard" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-6 hover:from-orange-600 hover:to-orange-700 transition shadow-lg">
+        <h3 class="font-bold text-lg mb-2">🏆 View Leaderboard</h3>
+        <p class="text-orange-100 text-sm">See top ranked students</p>
+    </a>
+</div>
+{% endblock %}
